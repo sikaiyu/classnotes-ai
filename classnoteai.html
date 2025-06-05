@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClassNotes AI - 智慧課堂筆記助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .phone-container {
+            width: 400px;
+            height: 850px;
+            background: #000;
+            border-radius: 40px;
+            padding: 8px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 32px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-bar {
+            height: 44px;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            padding: 20px;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .lang-selector {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            padding: 8px 15px;
+            color: white;
+            font-size: 12px;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .recording-section {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            position: relative;
+        }
+
+        .record-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .record-button:hover {
+            transform: scale(1.05);
+        }
+
+        .record-button.recording {
+            background: linear-gradient(135deg, #10b981, #059669);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4); }
+            50% { box-shadow: 0 8px 35px rgba(16, 185, 129, 0.8); }
+            100% { box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4); }
+        }
+
+        .status-text {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .live-transcript {
+            background: #f1f5f9;
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 150px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .live-transcript h3 {
+            color: #1e293b;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .transcript-text {
+            color: #475569;
+            line-height: 1.6;
+            font-size: 14px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .transcript-text.empty {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .ai-analysis {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid #f59e0b;
+        }
+
+        .ai-analysis h3 {
+            color: #92400e;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .analysis-content {
+            display: grid;
+            gap: 10px;
+        }
+
+        .analysis-item {
+            background: rgba(255,255,255,0.5);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #a16207;
+        }
+
+        .notes-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .notes-section h3 {
+            color: #1e293b;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .note-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 3px solid #3b82f6;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .control-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background: #4f46e5;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: #3730a3;
+            transform: translateY(-2px);
+        }
+
+        .control-btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .bottom-nav {
+            background: white;
+            height: 80px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #e2e8f0;
+            padding-bottom: 20px;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #64748b;
+            transition: color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-item.active {
+            color: #4f46e5;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .nav-label {
+            font-size: 12px;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 14px;
+            border: 1px solid #fecaca;
+        }
+
+        .success-message {
+            background: #dcfce7;
+            color: #166534;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 14px;
+            border: 1px solid #bbf7d0;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .export-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .export-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <div class="screen">
+            <div class="status-bar">
+                <span id="current-time">9:41</span>
+                <span>📶 🔋 100%</span>
+            </div>
+            
+            <div class="header">
+                <select class="lang-selector" id="langSelector">
+                    <option value="zh-TW">中文</option>
+                    <option value="en-US">English</option>
+                    <option value="ja-JP">日本語</option>
+                </select>
+                <h1>ClassNotes AI</h1>
+                <p>智慧課堂筆記助手</p>
+            </div>
+
+            <div class="main-content">
+                <!-- 首頁內容 -->
+                <div id="home-tab" class="tab-content active">
+                    <div class="recording-section">
+                        <button class="record-button" id="recordBtn">
+                            🎤
+                        </button>
+                        <p class="status-text" id="statusText">點擊開始錄音</p>
+                        <p style="font-size: 12px; color: #64748b;">即時轉錄並智能整理</p>
+                        
+                        <div class="controls">
+                            <button class="control-btn" id="pauseBtn" disabled>暫停</button>
+                            <button class="control-btn" id="stopBtn" disabled>停止</button> 
+                            <button class="control-btn" id="clearBtn">清除</button>
+                        </div>
+                    </div>
+
+                    <div class="live-transcript">
+                        <h3>📝 即時轉錄</h3>
+                        <div class="transcript-text empty" id="transcript">
+                            等待開始錄音...
+                        </div>
+                    </div>
+
+                    <div class="ai-analysis">
+                        <h3>🤖 AI 智能分析</h3>
+                        <div class="analysis-content" id="analysisContent">
+                            <div class="analysis-item">等待錄音內容進行分析...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 筆記頁面 -->
+                <div id="notes-tab" class="tab-content">
+                    <div class="notes-section">
+                        <h3>📚 我的筆記</h3>
+                        <div id="notesList">
+                            <div class="analysis-item">尚無筆記記錄</div>
+                        </div>
+                    </div>
+                    
+                    <div class="export-section">
+                        <h3>📤 匯出選項</h3>
+                        <button class="export-btn" onclick="exportNotes('txt')">匯出 TXT</button>
+                        <button class="export-btn" onclick="exportNotes('pdf')">匯出 PDF</button>
+                        <button class="export-btn" onclick="shareNotes()">分享</button>
+                    </div>
+                </div>
+
+                <!-- 考題頁面 -->
+                <div id="quiz-tab" class="tab-content">
+                    <div class="notes-section">
+                        <h3>📝 智能考題</h3>
+                        <div id="quizContent">
+                            <div class="analysis-item">請先錄音以生成考題</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 雲端頁面 -->
+                <div id="cloud-tab" class="tab-content">
+                    <div class="notes-section">
+                        <h3>☁️ 雲端同步</h3>
+                        <div class="analysis-item">
+                            <div style="margin-bottom: 10px;">📊 使用統計</div>
+                            <div>• 總錄音時長: <span id="totalTime">0</span> 分鐘</div>
+                            <div>• 筆記數量: <span id="notesCount">0</span> 篇</div>
+                            <div>• 生成考題: <span id="quizCount">0</span> 題</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 設定頁面 -->
+                <div id="settings-tab" class="tab-content">
+                    <div class="notes-section">
+                        <h3>⚙️ 設定</h3>
+                        <div class="analysis-item">
+                            <label style="display: block; margin-bottom: 10px;">
+                                <input type="checkbox" id="autoSave" checked> 自動儲存筆記
+                            </label>
+                            <label style="display: block; margin-bottom: 10px;">
+                                <input type="checkbox" id="aiAnalysis" checked> 啟用 AI 分析
+                            </label>
+                            <label style="display: block; margin-bottom: 10px;">
+                                <input type="checkbox" id="realTimeTranscript" checked> 即時轉錄
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-nav">
+                <a href="#" class="nav-item active" data-tab="home">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-label">首頁</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="notes">
+                    <span class="nav-icon">📚</span>
+                    <span class="nav-label">筆記</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="quiz">
+                    <span class="nav-icon">📝</span>
+                    <span class="nav-label">考題</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="cloud">
+                    <span class="nav-icon">☁️</span>
+                    <span class="nav-label">雲端</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-label">設定</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全域變數
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+        let isPaused = false;
+        let recognition = null;
+        let currentTranscript = '';
+        let allNotes = [];
+        let startTime = null;
+        let totalRecordingTime = 0;
+
+        // DOM 元素
+        const recordBtn = document.getElementById('recordBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const statusText = document.getElementById('statusText');
+        const transcript = document.getElementById('transcript');
+        const analysisContent = document.getElementById('analysisContent');
+        const langSelector = document.getElementById('langSelector');
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTime();
+            setInterval(updateTime, 1000);
+            initSpeechRecognition();
+            loadStoredData();
+            setupNavigation();
+        });
+
+        // 更新時間
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = 
+                now.getHours().toString().padStart(2, '0') + ':' + 
+                now.getMinutes().toString().padStart(2, '0');
+        }
+
+        // 初始化語音辨識
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = langSelector.value;
+                
+                recognition.onresult = function(event) {
+                    let interimTranscript = '';
+                    let finalTranscript = '';
+                    
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const transcript_text = event.results[i][0].transcript;
+                        if (event.results[i].isFinal) {
+                            finalTranscript += transcript_text;
+                        } else {
+                            interimTranscript += transcript_text;
+                        }
+                    }
+                    
+                   if (finalTranscript) {
+                        currentTranscript += finalTranscript; // ← 改成「加上」新句子
+                        performAIAnalysis(currentTranscript); // 分析全部
+                        
+                    }
+    
+                    updateTranscript(currentTranscript + interimTranscript);
+                };
+                
+                recognition.onerror = function(event) {
+                    showMessage('語音辨識錯誤: ' + event.error, 'error');
+                };
+                
+                recognition.onend = function() {
+                    if (isRecording && !isPaused) {
+                        recognition.start();
+                    }
+                };
+            } else {
+                showMessage('您的瀏覽器不支援語音辨識功能', 'error');
+            }
+        }
+
+        // 開始/停止錄音
+        recordBtn.addEventListener('click', async function() {
+            if (!isRecording) {
+                await startRecording();
+            } else {
+                stopRecording();
+            }
+        });
+
+        // 暫停/繼續錄音
+        pauseBtn.addEventListener('click', function() {
+            if (isPaused) {
+                resumeRecording();
+            } else {
+                pauseRecording();
+            }
+        });
+        // 停止錄音
+        stopBtn.addEventListener('click', function() {
+            stopRecording();   // 直接叫現有的停止錄音函數
+        });
+
+        // 清除內容
+        clearBtn.addEventListener('click', function() {
+            clearTranscript();
+        });
+
+        // 語言切換
+        langSelector.addEventListener('change', function() {
+            if (recognition) {
+                recognition.lang = this.value;
+            }
+        });
+
+        // 開始錄音
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = function(event) {
+                    audioChunks.push(event.data);
+                };
+                
+                mediaRecorder.onstop = function() {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    // 這裡可以上傳到伺服器或進行其他處理
+                };
+                
+                mediaRecorder.start();
+                
+                if (recognition) {
+                    recognition.start();
+                }
+                
+                isRecording = true;
+                isPaused = false;
+                startTime = Date.now();
+                
+                recordBtn.classList.add('recording');
+                recordBtn.innerHTML = '⏹️';
+                statusText.textContent = '錄音中...';
+                pauseBtn.disabled = false;
+                stopBtn.disabled = false;
+                showMessage('開始錄音', 'success');
+                
+            } catch (error) {
+                showMessage('無法存取麥克風: ' + error.message, 'error');
+            }
+        }
+
+        // 停止錄音
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            }
+            
+            if (recognition) {
+                recognition.stop();
+            }
+            
+            isRecording = false;
+            isPaused = false;
+            
+            if (startTime) {
+                totalRecordingTime += Math.round((Date.now() - startTime) / 1000 / 60);
+                updateStats();
+            }
+            
+            recordBtn.classList.remove('recording');
+            recordBtn.innerHTML = '🎤';
+            statusText.textContent = '點擊開始錄音';
+            pauseBtn.disabled = true;
+            pauseBtn.textContent = '暫停';
+            stopBtn.disabled = true; // 🆕 錄音停止後，停止鍵變回不可點
+
+            
+            // 儲存筆記
+            if (currentTranscript.trim()) {
+                saveNote(currentTranscript);
+                currentTranscript = ''; // 清空當前轉錄內容
+                updateTranscript('');
+            }
+            
+            showMessage('錄音已停止，筆記已儲存', 'success');
+        }
+
+        // 暫停錄音
+        function pauseRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.pause();
+            }
+            
+            //if (recognition) {
+              //  recognition.stop();
+            //}
+            
+            isPaused = true;
+            statusText.textContent = '錄音已暫停';
+            pauseBtn.textContent = '繼續';
+        }
+
+        // 繼續錄音
+        function resumeRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'paused') {
+                mediaRecorder.resume();
+            }
+            
+            if (recognition) {
+                recognition.start();
+            }
+            
+            isPaused = false;
+            statusText.textContent = '錄音中...';
+            pauseBtn.textContent = '暫停';
+        }
+
+        // 更新轉錄文字
+        function updateTranscript(text) {
+            if (text.trim()) {
+                transcript.textContent = text;
+                transcript.classList.remove('empty');
+            } else {
+                transcript.textContent = '等待語音輸入...';
+                transcript.classList.add('empty');
+            }
+        }
+
+        // 清除轉錄內容
+        function clearTranscript() {
+            currentTranscript = '';
+            updateTranscript('');
+            analysisContent.innerHTML = '<div class="analysis-item">等待錄音內容進行分析...</div>';
+        }
+
+        // AI 分析 (模擬)
+        function performAIAnalysis(text) {
+            if (!document.getElementById('aiAnalysis').checked) return;
+            
+            const keywords = extractKeywords(text);
+            const concepts = identifyConcepts(text);
+            const examPoints = identifyExamPoints(text);
+            
+            let analysisHTML = '';
+            
+            if (keywords.length > 0) {
+                analysisHTML += `<div class="analysis-item">🔑 關鍵詞: ${keywords.join(', ')}</div>`;
+            }
+            
+            if (concepts.length > 0) {
+                analysisHTML += `<div class="analysis-item">💡 重要概念: ${concepts.length} 個</div>`;
+            }
+            
+            if (examPoints.length > 0) {
+                analysisHTML += `<div class="analysis-item">🎯 潛在考點: ${examPoints.length} 個</div>`;
+            }
+            
+            analysisHTML += `<div class="analysis-item">📊 字數統計: ${text.length} 字</div>`;
+            
+            analysisContent.innerHTML = analysisHTML;
+        }
+
+        // 提取關鍵詞 (簡化版)
+        function extractKeywords(text) {
+            const commonWords = ['的', '是', '在', '有', '和', '與', '或', '但', '而', '也', '都', '很', '非常', '可以', '能夠', '這個', '那個'];
+            const words = text.split(/\s+|[，。！？；：]/);
+            const keywords = words.filter(word => 
+                word.length > 1 && 
+                !commonWords.includes(word) &&
+                /[\u4e00-\u9fa5]/.test(word)
+            );
+            return [...new Set(keywords)].slice(0, 5);
+        }
+
+        // 識別概念 (簡化版)
+        function identifyConcepts(text) {
+            const conceptIndicators = ['定義', '概念', '理論', '方法', '原理', '法則', '公式', '定理'];
+            return conceptIndicators.filter(indicator => text.includes(indicator));
+        }
+
+        // 識別考點 (簡化版)
+        function identifyExamPoints(text) {
+            const examIndicators = ['重要', '考試', '必考', '關鍵', '核心', '基礎', '重點', '注意'];
+            return examIndicators.filter(indicator => text.includes(indicator));
+        }
+
+        // 儲存筆記
+        function saveNote(content) {
+            if (!document.getElementById('autoSave').checked) return;
+            
+            const note = {
+                id: Date.now(),
+                content: content,
+                timestamp: new Date().toLocaleString('zh-TW'),
+                keywords: extractKeywords(content),
+                concepts: identifyConcepts(content).length,
+                examPoints: identifyExamPoints(content).length
+            };
+            
+            allNotes.push(note);
+            updateNotesDisplay();
+            generateQuiz(content);
+            updateStats();
+            saveToStorage();
+        }
+
+        // 更新筆記顯示
+        function updateNotesDisplay() {
+            const notesList = document.getElementById('notesList');
+            
+            if (allNotes.length === 0) {
+                notesList.innerHTML = '<div class="analysis-item">尚無筆記記錄</div>';
+                return;
+            }
+            
+            notesList.innerHTML = allNotes.map(note => `
+                <div class="note-item">
+                    <div style="font-weight: bold; margin-bottom: 5px;">${note.timestamp}</div>
+                    <div style="margin-bottom: 8px;">${note.content.substring(0, 100)}${note.content.length > 100 ? '...' : ''}</div>
+                    <div style="font-size: 12px; color: #64748b;">
+                        關鍵詞: ${note.keywords.slice(0, 3).join(', ')} | 
+                        概念: ${note.concepts}個 | 
+                        考點: ${note.examPoints}個
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 生成考題 (簡化版)
+        function generateQuiz(content) {
+            const quizContent = document.getElementById('quizContent');
+            const keywords = extractKeywords(content);
+            const concepts = identifyConcepts(content);
+            
+            let quizHTML = '';
+            let questionCount = 0;
+            
+            // 生成填空題
+            keywords.forEach((keyword, index) => {
+                if (index < 2) {
+                    questionCount++;
+                    const sentence = content.split(keyword)[0].slice(-20) + '______' + content.split(keyword)[1].slice(0, 20);
+                    quizHTML += `
+                        <div class="note-item">
+                            <div style="font-weight: bold;">問題 ${questionCount} (填空題)</div>
+                            <div>${sentence}</div>
+                            <div style="font-size: 12px; color: #64748b; margin-top: 5px;">答案: ${keyword}</div>
+                        </div>
+                    `;
+                }
+            });
+            
+            // 生成選擇題
+            concepts.forEach((concept, index) => {
+                if (index < 2) {
+                    questionCount++;
+                    quizHTML += `
+                        <div class="note-item">
+                            <div style="font-weight: bold;">問題 ${questionCount} (選擇題)</div>
+                            <div>關於「${concept}」的敘述，下列何者正確？</div>
+                            <div style="margin: 8px 0;">
+                                A) 選項一<br>
+                                B) 選項二<br>
+                                C) 選項三<br>
+                                D) 選項四
+                            </div>
+                            <div style="font-size: 12px; color: #64748b;">答案: 根據課堂內容判斷</div>
+                        </div>
+                    `;
+                }
+            });
+            
+            if (questionCount === 0) {
+                quizHTML = '<div class="analysis-item">請先錄音以生成考題</div>';
+            }
+            
+            quizContent.innerHTML = quizHTML;
+            
+            // 更新統計
+            document.getElementById('quizCount').textContent = 
+                (parseInt(document.getElementById('quizCount').textContent) + questionCount).toString();
+        }
+
+        // 更新統計資料
+        function updateStats() {
+            document.getElementById('totalTime').textContent = totalRecordingTime.toString();
+            document.getElementById('notesCount').textContent = allNotes.length.toString();
+        }
+
+        // 匯出筆記
+        function exportNotes(format) {
+            if (allNotes.length === 0) {
+                showMessage('沒有筆記可匯出', 'error');
+                return;
+            }
+            
+            let content = '';
+            allNotes.forEach(note => {
+                content += `${note.timestamp}\n`;
+                content += `${note.content}\n`;
+                content += `關鍵詞: ${note.keywords.join(', ')}\n`;
+                content += `概念數: ${note.concepts} | 考點數: ${note.examPoints}\n`;
+                content += '\n' + '='.repeat(50) + '\n\n';
+            });
+            
+            if (format === 'txt') {
+                downloadFile(content, 'classnotes.txt', 'text/plain');
+            } else if (format === 'pdf') {
+                // 簡化的PDF匯出 (實際應用中需要使用PDF庫)
+                showMessage('PDF匯出功能開發中', 'error');
+            }
+        }
+
+        // 下載檔案
+        function downloadFile(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showMessage(`${filename} 下載完成`, 'success');
+        }
+
+        // 分享筆記
+        function shareNotes() {
+            if (allNotes.length === 0) {
+                showMessage('沒有筆記可分享', 'error');
+                return;
+            }
+            
+            const shareText = `我使用 ClassNotes AI 整理了 ${allNotes.length} 篇筆記！`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'ClassNotes AI 筆記',
+                    text: shareText,
+                    url: window.location.href
+                });
+            } else {
+                // 複製到剪貼簿
+                navigator.clipboard.writeText(shareText).then(() => {
+                    showMessage('分享連結已複製到剪貼簿', 'success');
+                });
+            }
+        }
+
+        // 導航功能
+        function setupNavigation() {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetTab = this.dataset.tab;
+                    
+                    // 切換導航狀態
+                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 切換內容頁面
+                    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                    document.getElementById(targetTab + '-tab').classList.add('active');
+                });
+            });
+        }
+
+        // 顯示訊息
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
+            messageDiv.textContent = message;
+            
+            // 在錄音區域下方顯示訊息
+            const recordingSection = document.querySelector('.recording-section');
+            recordingSection.appendChild(messageDiv);
+            
+            // 3秒後自動移除
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.parentNode.removeChild(messageDiv);
+                }
+            }, 3000);
+        }
+
+        // 儲存到本地存儲
+        function saveToStorage() {
+            const data = {
+                notes: allNotes,
+                totalTime: totalRecordingTime,
+                settings: {
+                    autoSave: document.getElementById('autoSave').checked,
+                    aiAnalysis: document.getElementById('aiAnalysis').checked,
+                    realTimeTranscript: document.getElementById('realTimeTranscript').checked
+                }
+            };
+            
+            // 注意：這裡不使用 localStorage，而是使用變數儲存
+            window.appData = data;
+        }
+
+        // 從本地存儲載入
+        function loadStoredData() {
+            if (window.appData) {
+                const data = window.appData;
+                allNotes = data.notes || [];
+                totalRecordingTime = data.totalTime || 0;
+                
+                if (data.settings) {
+                    document.getElementById('autoSave').checked = data.settings.autoSave;
+                    document.getElementById('aiAnalysis').checked = data.settings.aiAnalysis;
+                    document.getElementById('realTimeTranscript').checked = data.settings.realTimeTranscript;
+                }
+                
+                updateNotesDisplay();
+                updateStats();
+            }
+        }
+
+        // 設定變更處理
+        document.getElementById('autoSave').addEventListener('change', saveToStorage);
+        document.getElementById('aiAnalysis').addEventListener('change', saveToStorage);
+        document.getElementById('realTimeTranscript').addEventListener('change', saveToStorage);
+
+        // 鍵盤快速鍵
+        document.addEventListener('keydown', function(e) {
+            // 空白鍵：開始/停止錄音
+            if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+                e.preventDefault();
+                recordBtn.click();
+            }
+            
+            // Ctrl+S：儲存當前筆記
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                if (currentTranscript.trim()) {
+                    saveNote(currentTranscript);
+                    showMessage('筆記已儲存', 'success');
+                }
+            }
+            
+            // Ctrl+C：清除內容
+            if (e.ctrlKey && e.key === 'c' && e.shiftKey) {
+                e.preventDefault();
+                clearBtn.click();
+            }
+        });
+
+        // 頁面卸載時停止錄音
+        window.addEventListener('beforeunload', function() {
+            if (isRecording) {
+                stopRecording();
+            }
+        });
+
+        // 添加一些示範筆記 (可選)
+        function addSampleNotes() {
+            const sampleNotes = [
+                {
+                    id: Date.now() - 1000,
+                    content: "人工智慧的發展經歷了三個主要階段：符號主義、連接主義和深度學習。深度學習是目前最熱門的研究領域，特別是在影像識別和自然語言處理方面有重大突破。",
+                    timestamp: new Date(Date.now() - 86400000).toLocaleString('zh-TW'),
+                    keywords: ["人工智慧", "深度學習", "影像識別", "自然語言處理"],
+                    concepts: 3,
+                    examPoints: 2
+                },
+                {
+                    id: Date.now() - 2000,
+                    content: "機器學習分為監督學習、非監督學習和強化學習三大類。監督學習需要標記資料，非監督學習則不需要，而強化學習是透過與環境互動來學習最佳策略。",
+                    timestamp: new Date(Date.now() - 172800000).toLocaleString('zh-TW'),
+                    keywords: ["機器學習", "監督學習", "非監督學習", "強化學習"],
+                    concepts: 4,
+                    examPoints: 3
+                }
+            ];
+            
+            allNotes = sampleNotes;
+            updateNotesDisplay();
+            updateStats();
+        }
+
+        // 如果想要添加示範資料，可以取消註解下面這行
+        // addSampleNotes();
+    </script>
+</body>
+</html>
